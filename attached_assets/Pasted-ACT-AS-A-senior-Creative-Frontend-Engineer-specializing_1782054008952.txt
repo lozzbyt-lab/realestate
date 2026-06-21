@@ -1,0 +1,238 @@
+ACT AS:
+A senior Creative Frontend Engineer specializing in Next.js 14, high-performance canvas rendering, and buttery-smooth scroll-driven animations (Awwwards-level execution).
+
+---
+
+OBJECTIVE (PHASE 1 ONLY):
+Build a **scroll-driven image sequence intro section** that:
+
+1. Preloads a sequence of JPEG images in the background
+2. Plays them smoothly on scroll using a canvas
+3. Locks the user into this experience initially
+4. Once animation completes → seamlessly reveals the rest of the page content
+
+NO extra sections, NO real estate UI yet — only this animation system + transition.
+
+---
+
+CORE EXPERIENCE FLOW:
+
+1. **Initial Load**
+
+* Page loads with a **dark blank background**
+* Start preloading all JPEG frames immediately
+* Show a minimal loader (progress % or subtle spinner)
+
+2. **Before Images Load**
+
+* Disable scrolling completely
+* Prevent animation start
+
+3. **After Images Loaded**
+
+* Enable scroll
+* Start listening to scroll progress
+
+4. **Scroll Animation**
+
+* As user scrolls:
+  → play image sequence frame-by-frame on canvas
+  → from frame 0 → final frame
+* The animation MUST:
+
+  * feel smooth (no stutter)
+  * interpolate frames (no jumping)
+  * sync perfectly with scroll
+
+5. **End of Animation (IMPORTANT)**
+
+* When scroll reaches ~95–100%:
+  → animation completes
+  → trigger a **smooth transition**
+
+6. **Reveal Next Content**
+
+* After animation:
+
+  * fade out canvas
+  * fade/slide in normal HTML content below
+  * restore default scrolling behavior
+
+---
+
+TECH STACK:
+
+* Next.js 14 (App Router)
+* Tailwind CSS
+* Framer Motion (for opacity/transition only)
+* HTML5 Canvas (for rendering frames)
+
+OPTIONAL (recommended for smoothness):
+
+* Lenis (smooth scroll engine)
+
+---
+
+IMPLEMENTATION DETAILS:
+
+1. **Component Structure**
+
+* `app/page.tsx`
+
+  * renders:
+    → `<ScrollIntro />`
+    → `<MainContent />` (hidden initially)
+
+* `components/ScrollIntro.tsx`
+  → handles ALL animation logic
+
+---
+
+2. **Canvas Setup**
+
+* Container:
+
+  * `h-[300vh]` (enough scroll space)
+* Canvas:
+
+  * `sticky top-0`
+  * `w-full h-screen`
+* Scale canvas using `devicePixelRatio` for sharp rendering
+
+---
+
+3. **Image Sequence**
+
+* Load: [TOTAL_FRAME_COUNT] JPEG images
+
+* Path format:
+  `/frames/frame_0001.jpeg`
+
+* Store images in:
+  `useRef([])`
+
+* Preload using:
+  `new Image()`
+
+---
+
+4. **Scroll Logic (CRITICAL)**
+
+* Use:
+  `useScroll()` from Framer Motion OR custom scroll listener
+
+* Map:
+  scroll progress (0 → 1)
+  → frame index (0 → totalFrames - 1)
+
+* Use:
+
+  * `requestAnimationFrame`
+  * linear interpolation (lerp)
+
+* ONLY redraw canvas when frame changes
+
+---
+
+5. **Performance Requirements**
+
+* No lag, no flicker
+* No re-renders during scroll
+* Use:
+
+  * refs instead of state
+  * `will-change: transform`
+* Optimize for large image sequences
+
+---
+
+6. **Scroll Lock System**
+
+* While loading:
+  `document.body.style.overflow = 'hidden'`
+
+* After load:
+  restore scroll
+
+---
+
+7. **Animation Completion Logic**
+
+* Detect when:
+  `scrollProgress >= 0.95`
+
+* Then:
+
+  * lock scroll briefly
+  * trigger transition
+
+---
+
+8. **Transition to Content**
+
+* Fade out canvas:
+  opacity 1 → 0
+
+* Fade in main content:
+  opacity 0 → 1
+  translateY: 40px → 0
+
+* Use Framer Motion
+
+---
+
+9. **Main Content (Placeholder)**
+
+* Simple div:
+
+  * height: 200vh
+  * text: "Next Section"
+
+* Hidden until animation completes
+
+---
+
+10. **Loader UI**
+
+* Minimal:
+
+  * center spinner OR %
+* Show until ALL images loaded
+
+---
+
+IMPORTANT RULES:
+
+* DO NOT start animation before preload completes
+* DO NOT cause layout shift
+* DO NOT use heavy libraries except mentioned
+* MUST feel premium and smooth
+
+---
+
+OUTPUT REQUIRED:
+
+Generate full working code for:
+
+* `app/page.tsx`
+* `components/ScrollIntro.tsx`
+* `components/MainContent.tsx`
+* `app/globals.css`
+
+Code must be:
+
+* production-ready
+* optimized
+* clean and modular
+
+---
+
+FINAL GOAL:
+
+A silky-smooth scroll intro that feels like:
+
+→ Apple product reveal
+→ Luxury cinematic transition
+→ Zero lag, zero compromise
+
+This is the foundation for a high-end real estate experience (to be built later).
