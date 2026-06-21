@@ -30,15 +30,36 @@ export default function ContactSection() {
 
           {/* Form */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-            viewport={{ once: true }}
+            transition={{ duration: 0.85, ease: [0.25, 0.46, 0.45, 0.94] }}
+            viewport={{ once: true, margin: "-80px" }}
           >
-            <p className="section-label mb-4">Send a Message</p>
-            <h2 className="text-3xl lg:text-4xl font-bold text-dark tracking-tight mb-8">
-              Tell Us About Your Project
-            </h2>
+            <motion.p
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.55 }}
+              viewport={{ once: true }}
+              className="section-label mb-3"
+            >Send a Message</motion.p>
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="h-0.5 w-14 bg-accent origin-left mb-5"
+            />
+            <div style={{ overflow: "hidden" }}>
+              <motion.h2
+                initial={{ y: 40, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+                viewport={{ once: true }}
+                className="text-3xl lg:text-4xl font-bold text-dark tracking-tight mb-8"
+              >
+                Tell Us About Your Project
+              </motion.h2>
+            </div>
 
             {submitted ? (
               <motion.div
@@ -96,12 +117,15 @@ export default function ContactSection() {
                     className={`${inputClass} resize-none`}
                   />
                 </div>
-                <button
+                <motion.button
                   type="submit"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ duration: 0.2 }}
                   className="w-full bg-dark hover:bg-dark-mid text-white font-bold py-4 rounded-xl text-sm transition-colors duration-200 mt-2"
                 >
                   Send Message →
-                </button>
+                </motion.button>
               </form>
             )}
           </motion.div>

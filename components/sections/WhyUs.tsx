@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { fadeUp, cardReveal, labelReveal, lineGrowX, stagger, VIEWPORT } from "@/lib/animations";
 
 const features = [
   {
@@ -41,35 +42,63 @@ const features = [
   },
 ];
 
+const iconVariant = {
+  hidden: { scale: 0.5, opacity: 0, rotate: -10 },
+  show: { scale: 1, opacity: 1, rotate: 0, transition: { duration: 0.5, ease: [0.34, 1.56, 0.64, 1] } },
+};
+
 export default function WhyUs() {
   return (
     <section className="bg-dark py-24 lg:py-32">
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
-        <div className="text-center mb-16">
-          <p className="section-label mb-4">Why Choose Us</p>
-          <h2 className="text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight">
-            What Sets Us Apart
-          </h2>
-        </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <motion.div
+          className="text-center mb-16"
+          variants={stagger(0.1)}
+          initial="hidden"
+          whileInView="show"
+          viewport={VIEWPORT}
+        >
+          <motion.div variants={labelReveal}>
+            <p className="section-label mb-3">Why Choose Us</p>
+          </motion.div>
+          <div style={{ overflow: "hidden" }}>
+            <motion.h2
+              variants={fadeUp}
+              className="text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight"
+            >
+              What Sets Us Apart
+            </motion.h2>
+          </div>
+          <motion.div variants={lineGrowX} className="h-0.5 w-14 bg-accent mx-auto origin-left mt-5" />
+        </motion.div>
+
+        <motion.div
+          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          variants={stagger(0.1)}
+          initial="hidden"
+          whileInView="show"
+          viewport={VIEWPORT}
+        >
           {features.map((f, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-              viewport={{ once: true, margin: "-60px" }}
-              className="bg-dark-mid rounded-2xl p-7 border border-white/5 hover:border-accent/30 transition-colors duration-300 group"
+              variants={cardReveal}
+              whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.25 } }}
+              className="bg-dark-mid rounded-2xl p-7 border border-white/5 hover:border-accent/30 transition-colors duration-300 group cursor-default"
             >
-              <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mb-5 text-accent group-hover:bg-accent/20 transition-colors duration-300">
+              <motion.div
+                variants={iconVariant}
+                className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mb-5 text-accent group-hover:bg-accent/20 transition-colors duration-300"
+              >
                 {f.icon}
-              </div>
+              </motion.div>
               <h3 className="text-white font-bold text-lg mb-3 tracking-tight">{f.title}</h3>
               <p className="text-white/40 text-sm leading-relaxed">{f.desc}</p>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
+
       </div>
     </section>
   );

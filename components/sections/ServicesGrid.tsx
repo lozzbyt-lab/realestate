@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { cardReveal, labelReveal, lineGrowX, stagger, VIEWPORT, EASE } from "@/lib/animations";
 
 const services = [
   {
@@ -41,50 +42,67 @@ const services = [
   },
 ];
 
+const featureItem = {
+  hidden: { opacity: 0, x: -12 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.4 } },
+};
+
 export default function ServicesGrid() {
   return (
     <section className="bg-white py-24 lg:py-32">
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+
+        <motion.div
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+          variants={stagger(0.09)}
+          initial="hidden"
+          whileInView="show"
+          viewport={VIEWPORT}
+        >
           {services.map((svc, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: i * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-              viewport={{ once: true, margin: "-60px" }}
-              className="bg-cream rounded-2xl overflow-hidden group hover:shadow-lg transition-shadow duration-300 flex flex-col"
+              variants={cardReveal}
+              whileHover={{ y: -6, transition: { duration: 0.25 } }}
+              className="bg-cream rounded-2xl overflow-hidden group shadow-sm hover:shadow-lg transition-shadow duration-300 flex flex-col cursor-default"
             >
-              <div
-                className="h-52 relative overflow-hidden flex-shrink-0"
-                style={{
-                  backgroundImage: `url('/frames/${svc.frame}')`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-              >
-                <div className="absolute inset-0 bg-dark/30 group-hover:bg-dark/15 transition-colors duration-500" />
+              <div className="h-52 relative overflow-hidden flex-shrink-0">
+                <motion.div
+                  whileHover={{ scale: 1.07 }}
+                  transition={{ duration: 0.55, ease: EASE }}
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage: `url('/frames/${svc.frame}')`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                />
+                <div className="absolute inset-0 bg-dark/30 group-hover:bg-dark/15 transition-colors duration-500 pointer-events-none" />
               </div>
 
               <div className="p-7 flex flex-col flex-1">
                 <h3 className="text-dark font-bold text-xl mb-3 tracking-tight">{svc.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed mb-5 flex-1">{svc.desc}</p>
-                <ul className="space-y-2">
+                <motion.ul
+                  className="space-y-2"
+                  variants={stagger(0.06)}
+                >
                   {svc.features.map((f, j) => (
-                    <li key={j} className="flex items-center gap-2.5 text-sm text-gray-600">
+                    <motion.li key={j} variants={featureItem} className="flex items-center gap-2.5 text-sm text-gray-600">
                       <span className="w-4 h-4 rounded-full bg-accent/15 flex items-center justify-center flex-shrink-0">
                         <svg width="8" height="7" viewBox="0 0 8 7" fill="none">
                           <path d="M1 3.5L3 5.5L7 1" stroke="#8DC63F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       </span>
                       {f}
-                    </li>
+                    </motion.li>
                   ))}
-                </ul>
+                </motion.ul>
               </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
+
       </div>
     </section>
   );

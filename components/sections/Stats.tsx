@@ -1,12 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
+import CountUp from "@/components/ui/CountUp";
+import { fadeUp, cardReveal, labelReveal, lineGrowX, stagger, VIEWPORT } from "@/lib/animations";
 
 const stats = [
-  { value: "100+", label: "Projects Completed" },
-  { value: "10", suffix: "Yrs.", label: "Industry Experience" },
-  { value: "98%", label: "Client Satisfaction" },
-  { value: "40+", label: "Expert Team Members" },
+  { to: 100, suffix: "+", label: "Projects Completed" },
+  { to: 10, suffix: "", extra: "Yrs.", label: "Industry Experience" },
+  { to: 98, suffix: "%", label: "Client Satisfaction" },
+  { to: 40, suffix: "+", label: "Expert Team Members" },
 ];
 
 export default function Stats() {
@@ -14,44 +16,61 @@ export default function Stats() {
     <section className="bg-cream py-24 lg:py-32">
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-            viewport={{ once: true, margin: "-80px" }}
+            variants={stagger(0.1)}
+            initial="hidden"
+            whileInView="show"
+            viewport={VIEWPORT}
           >
-            <p className="section-label mb-4">Our Track Record</p>
-            <h2 className="text-4xl lg:text-5xl font-bold text-dark leading-tight tracking-tight mb-6">
-              Backed by Results, <br />
-              Built on Relationships.
-            </h2>
-            <p className="text-gray-500 leading-relaxed text-base">
+            <motion.div variants={labelReveal}>
+              <p className="section-label mb-3">Our Track Record</p>
+            </motion.div>
+
+            <div style={{ overflow: "hidden" }}>
+              <motion.h2
+                variants={fadeUp}
+                className="text-4xl lg:text-5xl font-bold text-dark leading-tight tracking-tight mb-4"
+              >
+                Backed by Results, <br />
+                Built on Relationships.
+              </motion.h2>
+            </div>
+
+            <motion.div variants={lineGrowX} className="h-0.5 w-14 bg-accent origin-left mb-6" />
+
+            <motion.p variants={fadeUp} className="text-gray-500 leading-relaxed text-base">
               Every number behind our name represents a family whose dream became
               reality, a business whose vision came to life, or a community that
               grew stronger because of what we built together.
-            </p>
+            </motion.p>
           </motion.div>
 
-          <div className="grid grid-cols-2 gap-5">
+          <motion.div
+            className="grid grid-cols-2 gap-5"
+            variants={stagger(0.1, 0.1)}
+            initial="hidden"
+            whileInView="show"
+            viewport={VIEWPORT}
+          >
             {stats.map((s, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
-                viewport={{ once: true, margin: "-60px" }}
-                className="bg-white rounded-2xl p-7"
+                variants={cardReveal}
+                whileHover={{ y: -4, transition: { duration: 0.25 } }}
+                className="bg-white rounded-2xl p-7 cursor-default"
               >
                 <p className="text-dark font-bold text-5xl tracking-tight leading-none mb-2">
-                  {s.value}
-                  {s.suffix && (
-                    <span className="text-accent text-3xl ml-1">{s.suffix}</span>
+                  <CountUp to={s.to} suffix={s.suffix} />
+                  {s.extra && (
+                    <span className="text-accent text-3xl ml-1">{s.extra}</span>
                   )}
                 </p>
                 <p className="text-gray-400 text-sm">{s.label}</p>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
+
         </div>
       </div>
     </section>
