@@ -100,25 +100,9 @@ export default function Footer() {
       </div>
 
       {/* ── House + wordmark stage ── */}
-      <div className="w-full flex flex-col items-center overflow-hidden pt-6">
-        {/* Floating house image */}
-        <div
-          className="footer-house relative z-10"
-          style={{ width: "clamp(280px, 52%, 640px)" }}
-        >
-          <Image
-            src="/footer-house.webp"
-            alt="Luxury modern home"
-            width={700}
-            height={560}
-            className="object-contain"
-            style={{ width: "100%", height: "auto" }}
-            priority
-          />
-        </div>
-
-        {/* Giant wordmark — directly below the house, always visible */}
-        <div className="w-full text-center overflow-hidden -mt-4 pb-2 select-none pointer-events-none">
+      <div className="w-full relative overflow-hidden">
+        {/* Giant wordmark — sits at the top, house floats over it */}
+        <div className="w-full text-center select-none pointer-events-none pt-4">
           <span
             className="font-black leading-none block"
             style={{
@@ -130,6 +114,25 @@ export default function Footer() {
           >
             BRIKLY.
           </span>
+        </div>
+
+        {/* Floating house — overlaps the lower portion of the wordmark */}
+        <div
+          className="footer-house relative z-10 mx-auto"
+          style={{
+            width: "clamp(280px, 55%, 660px)",
+            marginTop: "clamp(-120px, -13vw, -200px)",
+          }}
+        >
+          <Image
+            src="/footer-house.webp"
+            alt="Luxury modern home"
+            width={700}
+            height={560}
+            className="object-contain"
+            style={{ width: "100%", height: "auto" }}
+            priority
+          />
         </div>
       </div>
 
