@@ -120,8 +120,8 @@ export default function Footer() {
         <div
           className="footer-house relative z-10 mx-auto"
           style={{
-            width: "clamp(280px, 55%, 660px)",
-            marginTop: "clamp(-120px, -13vw, -200px)",
+            width: "clamp(280px, 55%, 660px)"
+            
           }}
         >
           <Image
