@@ -100,46 +100,36 @@ export default function Footer() {
       </div>
 
       {/* ── House + wordmark stage ── */}
-      <div
-        className="relative w-full flex flex-col items-center justify-end overflow-hidden"
-        style={{ height: "clamp(380px, 50vw, 700px)" }}
-      >
-        {/* Giant wordmark — sits behind the house */}
+      <div className="w-full flex flex-col items-center overflow-hidden pt-6">
+        {/* Floating house image */}
         <div
-          className="absolute bottom-0 left-0 right-0 flex items-end justify-center overflow-hidden pointer-events-none select-none z-0"
-          style={{ paddingBottom: "clamp(10px, 2vw, 28px)" }}
-        >
-          <span
-            className="font-black text-dark leading-none"
-            style={{
-              fontSize: "clamp(90px, 20vw, 290px)",
-              letterSpacing: "-0.045em",
-              lineHeight: 0.82,
-              opacity: 1,
-              color: "#0D1F14",
-            }}
-          >
-            BRIKLY.
-          </span>
-        </div>
-
-        {/* Floating house image — sits in front of the wordmark */}
-        <div
-          className="relative z-10 footer-house"
-          style={{
-            width: "clamp(300px, 55%, 700px)",
-            marginBottom: "clamp(-30px, -3vw, -60px)",
-          }}
+          className="footer-house relative z-10"
+          style={{ width: "clamp(280px, 52%, 640px)" }}
         >
           <Image
             src="/footer-house.webp"
             alt="Luxury modern home"
             width={700}
             height={560}
-            className="object-contain drop-shadow-2xl"
+            className="object-contain"
             style={{ width: "100%", height: "auto" }}
             priority
           />
+        </div>
+
+        {/* Giant wordmark — directly below the house, always visible */}
+        <div className="w-full text-center overflow-hidden -mt-4 pb-2 select-none pointer-events-none">
+          <span
+            className="font-black leading-none block"
+            style={{
+              fontSize: "clamp(88px, 19vw, 280px)",
+              letterSpacing: "-0.045em",
+              lineHeight: 0.85,
+              color: "#0D1F14",
+            }}
+          >
+            BRIKLY.
+          </span>
         </div>
       </div>
 
