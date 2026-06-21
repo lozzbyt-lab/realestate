@@ -21,9 +21,10 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
   const rafRef = useRef<number | null>(null);
   const currentFrameRef = useRef(0);
   const targetFrameRef = useRef(0);
+  const progressRef = useRef(0);
 
+  const wrapperControls = useAnimation();
   const loaderControls = useAnimation();
-  const canvasControls = useAnimation();
 
   const drawFrame = useCallback((index: number) => {
     const canvas = canvasRef.current;
@@ -36,7 +37,6 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
     const dpr = window.devicePixelRatio || 1;
     const w = canvas.width / dpr;
     const h = canvas.height / dpr;
-
     const imgW = img.naturalWidth;
     const imgH = img.naturalHeight;
     const scale = Math.max(w / imgW, h / imgH);
@@ -57,7 +57,7 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
     canvas.height = window.innerHeight * dpr;
     canvas.style.width = `${window.innerWidth}px`;
     canvas.style.height = `${window.innerHeight}px`;
-    drawFrame(currentFrameRef.current);
+    drawFrame(Math.round(currentFrameRef.current));
   }, [drawFrame]);
 
   const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -66,10 +66,11 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
     const prev = currentFrameRef.current;
     const next = lerp(prev, targetFrameRef.current, 0.12);
     const snapped = Math.round(next);
+    const prevSnapped = Math.round(prev);
 
     if (Math.abs(next - prev) > 0.01) {
       currentFrameRef.current = next;
-      if (snapped !== Math.round(prev)) {
+      if (snapped !== prevSnapped) {
         drawFrame(snapped);
       }
     }
@@ -77,15 +78,35 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
     rafRef.current = requestAnimationFrame(animate);
   }, [drawFrame]);
 
+  const triggerCompletion = useCallback(async () => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    drawFrame(TOTAL_FRAMES - 1);
+
+    document.body.style.overflow = "hidden";
+
+    await wrapperControls.start({
+      opacity: 0,
+      transition: { duration: 1.1, ease: [0.25, 0.46, 0.45, 0.94] },
+    });
+
+    const container = containerRef.current;
+    if (container) container.style.display = "none";
+
+    window.scrollTo({ top: 0, behavior: "instant" });
+    document.body.style.overflow = "";
+
+    onComplete();
+  }, [wrapperControls, drawFrame, onComplete]);
+
   const handleScroll = useCallback(() => {
     if (!isReadyRef.current || isCompletedRef.current) return;
-
     const container = containerRef.current;
     if (!container) return;
 
     const scrollTop = window.scrollY;
     const maxScroll = container.offsetHeight - window.innerHeight;
     const progress = Math.min(scrollTop / maxScroll, 1);
+    progressRef.current = progress;
 
     targetFrameRef.current = progress * (TOTAL_FRAMES - 1);
 
@@ -93,44 +114,19 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
       isCompletedRef.current = true;
       triggerCompletion();
     }
-  }, []);
-
-  const triggerCompletion = useCallback(async () => {
-    document.body.style.overflow = "hidden";
-
-    await canvasControls.start({
-      opacity: 0,
-      transition: { duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] },
-    });
-
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-
-    document.body.style.overflow = "";
-
-    const container = containerRef.current;
-    if (container) {
-      container.style.display = "none";
-    }
-
-    window.scrollTo({ top: 0, behavior: "instant" });
-
-    onComplete();
-  }, [canvasControls, onComplete]);
+  }, [triggerCompletion]);
 
   const onAllLoaded = useCallback(async () => {
     isReadyRef.current = true;
 
     await loaderControls.start({
       opacity: 0,
-      transition: { duration: 0.5 },
+      transition: { duration: 0.6 },
     });
 
     document.body.style.overflow = "";
-
     drawFrame(0);
-
     rafRef.current = requestAnimationFrame(animate);
-
     window.addEventListener("scroll", handleScroll, { passive: true });
   }, [loaderControls, drawFrame, animate, handleScroll]);
 
@@ -147,22 +143,10 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
     for (let i = 0; i < TOTAL_FRAMES; i++) {
       const img = new Image();
       img.src = FRAME_PATH(i);
-      img.onload = () => {
+      img.onload = img.onerror = () => {
         loaded++;
         loadedCountRef.current = loaded;
-
-        loaderControls.set({ opacity: 1 });
-
-        if (loaded === TOTAL_FRAMES) {
-          onAllLoaded();
-        }
-      };
-      img.onerror = () => {
-        loaded++;
-        loadedCountRef.current = loaded;
-        if (loaded === TOTAL_FRAMES) {
-          onAllLoaded();
-        }
+        if (loaded === TOTAL_FRAMES) onAllLoaded();
       };
       images[i] = img;
     }
@@ -180,7 +164,7 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
   return (
     <div ref={containerRef} className="relative" style={{ height: "300vh" }}>
       <motion.div
-        animate={canvasControls}
+        animate={wrapperControls}
         className="sticky top-0 w-full h-screen overflow-hidden bg-black"
         style={{ willChange: "opacity" }}
       >
@@ -195,44 +179,34 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
           initial={{ opacity: 1 }}
           className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none"
         >
-          <LoaderUI loadedRef={loadedCountRef} />
+          <div className="flex flex-col items-center gap-5">
+            <div className="relative w-10 h-10">
+              <svg className="animate-spin" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="17" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" />
+                <path d="M20 3 A17 17 0 0 1 37 20" stroke="#8DC63F" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </div>
+            <p className="text-white/30 text-xs tracking-[0.35em] uppercase">Loading</p>
+          </div>
         </motion.div>
-      </motion.div>
-    </div>
-  );
-}
 
-function LoaderUI({ loadedRef }: { loadedRef: React.RefObject<number> }) {
-  return (
-    <div className="flex flex-col items-center gap-6">
-      <div className="relative w-10 h-10">
-        <svg
-          className="animate-spin"
-          viewBox="0 0 40 40"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle
-            cx="20"
-            cy="20"
-            r="17"
-            stroke="rgba(255,255,255,0.1)"
-            strokeWidth="1.5"
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 0] }}
+            transition={{ delay: 0.5, duration: 2, repeat: Infinity, repeatDelay: 0.5 }}
+            className="text-white/40 text-xs tracking-[0.3em] uppercase"
+          >
+            Scroll
+          </motion.div>
+          <motion.div
+            initial={{ scaleY: 0, opacity: 0 }}
+            animate={{ scaleY: [0, 1, 0], opacity: [0, 0.4, 0] }}
+            transition={{ delay: 0.5, duration: 2, repeat: Infinity, repeatDelay: 0.5 }}
+            className="w-px h-8 bg-white origin-top"
           />
-          <path
-            d="M20 3 A17 17 0 0 1 37 20"
-            stroke="white"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-      <p
-        className="text-white/30 text-xs tracking-[0.35em] uppercase"
-        style={{ letterSpacing: "0.35em" }}
-      >
-        Loading
-      </p>
+        </div>
+      </motion.div>
     </div>
   );
 }

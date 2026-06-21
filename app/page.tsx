@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import ScrollIntro from "@/components/ScrollIntro";
-import MainContent from "@/components/MainContent";
+import Website from "@/components/Website";
 
 export default function Home() {
-  const [showContent, setShowContent] = useState(false);
+  const [showSite, setShowSite] = useState(false);
 
   return (
     <main>
-      <ScrollIntro onComplete={() => setShowContent(true)} />
-      <MainContent visible={showContent} />
+      <ScrollIntro onComplete={() => setShowSite(true)} />
+      <Website visible={showSite} />
     </main>
   );
 }

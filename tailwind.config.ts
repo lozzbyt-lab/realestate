@@ -7,7 +7,24 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        dark: "#0D1F14",
+        "dark-mid": "#1A3527",
+        "dark-light": "#1f3d2c",
+        accent: "#8DC63F",
+        "accent-dark": "#72a230",
+        cream: "#F5F4EF",
+        "gray-soft": "#f8f8f6",
+      },
+      fontFamily: {
+        sans: ["var(--font-jakarta)", "system-ui", "sans-serif"],
+        display: ["var(--font-jakarta)", "system-ui", "sans-serif"],
+      },
+      letterSpacing: {
+        widest2: "0.25em",
+      },
+    },
   },
   plugins: [],
 };
