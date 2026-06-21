@@ -4,7 +4,6 @@ import { useEffect, useRef, useCallback } from "react";
 import { motion, useAnimation } from "framer-motion";
 
 const TOTAL_FRAMES = 36;
-const AUTO_PLAY_SPEED = 0.22; // frames per RAF tick → ~2.7s at 60fps
 const FRAME_PATH = (i: number) =>
   `/frames/frame_${String(i + 1).padStart(4, "0")}.jpeg`;
 
@@ -17,7 +16,6 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const isReadyRef = useRef(false);
-  const hasTriggeredRef = useRef(false);
   const isCompletedRef = useRef(false);
   const rafRef = useRef<number | null>(null);
   const currentFrameRef = useRef(0);
@@ -60,51 +58,9 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
 
   const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-  // Completion is stored in a ref so animate() can call it without stale closure
-  const triggerCompletionRef = useRef<(() => void) | null>(null);
-
-  useEffect(() => {
-    triggerCompletionRef.current = async () => {
-      if (isCompletedRef.current) return;
-      isCompletedRef.current = true;
-
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      drawFrame(TOTAL_FRAMES - 1);
-
-      await wrapperControls.start({
-        opacity: 0,
-        transition: { duration: 1.0, ease: [0.25, 0.46, 0.45, 0.94] },
-      });
-
-      const container = containerRef.current;
-      if (container) container.style.display = "none";
-
-      window.scrollTo({ top: 0, behavior: "instant" });
-      document.body.style.overflow = "";
-      onComplete();
-    };
-  }, [wrapperControls, drawFrame, onComplete]);
-
   const animate = useCallback(() => {
-    // Auto-advance frames once triggered
-    if (hasTriggeredRef.current && !isCompletedRef.current) {
-      targetFrameRef.current = Math.min(
-        targetFrameRef.current + AUTO_PLAY_SPEED,
-        TOTAL_FRAMES - 1
-      );
-
-      if (
-        targetFrameRef.current >= TOTAL_FRAMES - 1 &&
-        !isCompletedRef.current
-      ) {
-        triggerCompletionRef.current?.();
-        return;
-      }
-    }
-
-    // Lerp current frame toward target
     const prev = currentFrameRef.current;
-    const next = lerp(prev, targetFrameRef.current, 0.14);
+    const next = lerp(prev, targetFrameRef.current, 0.12);
     const snapped = Math.round(next);
     const prevSnapped = Math.round(prev);
 
@@ -116,14 +72,39 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
     rafRef.current = requestAnimationFrame(animate);
   }, [drawFrame]);
 
-  // First scroll triggers auto-play; any subsequent scroll is ignored
+  const triggerCompletion = useCallback(async () => {
+    if (isCompletedRef.current) return;
+    isCompletedRef.current = true;
+
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    drawFrame(TOTAL_FRAMES - 1);
+
+    await wrapperControls.start({
+      opacity: 0,
+      transition: { duration: 1.0, ease: [0.25, 0.46, 0.45, 0.94] },
+    });
+
+    const container = containerRef.current;
+    if (container) container.style.display = "none";
+
+    window.scrollTo({ top: 0, behavior: "instant" });
+    document.body.style.overflow = "";
+    onComplete();
+  }, [wrapperControls, drawFrame, onComplete]);
+
   const handleScroll = useCallback(() => {
-    if (!isReadyRef.current || hasTriggeredRef.current) return;
-    hasTriggeredRef.current = true;
-    window.removeEventListener("scroll", handleScroll);
-    // Prevent user from scrolling past the container mid-animation
-    document.body.style.overflow = "hidden";
-  }, []);
+    if (!isReadyRef.current || isCompletedRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    const scrollTop = window.scrollY;
+    const maxScroll = container.offsetHeight - window.innerHeight;
+    const progress = Math.min(scrollTop / maxScroll, 1);
+
+    targetFrameRef.current = progress * (TOTAL_FRAMES - 1);
+
+    if (progress >= 0.95) triggerCompletion();
+  }, [triggerCompletion]);
 
   const onAllLoaded = useCallback(async () => {
     isReadyRef.current = true;
@@ -169,7 +150,7 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative" style={{ height: "200vh" }}>
+    <div ref={containerRef} className="relative" style={{ height: "300vh" }}>
       <motion.div
         animate={wrapperControls}
         className="sticky top-0 w-full h-screen overflow-hidden bg-black"
@@ -177,7 +158,6 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
       >
         <canvas ref={canvasRef} className="absolute inset-0" />
 
-        {/* Loader */}
         <motion.div
           animate={loaderControls}
           initial={{ opacity: 1 }}
@@ -194,7 +174,6 @@ export default function ScrollIntro({ onComplete }: ScrollIntroProps) {
           </div>
         </motion.div>
 
-        {/* Scroll indicator — shown only when ready, hidden once triggered */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 pointer-events-none z-10">
           <motion.p
             initial={{ opacity: 0 }}
